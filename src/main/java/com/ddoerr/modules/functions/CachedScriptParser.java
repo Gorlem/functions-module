@@ -26,7 +26,7 @@ public class CachedScriptParser implements IScriptParser {
 	public List<IMacroAction> parseScript(IMacroActionProcessor actionProcessor, String script) {
 		return actions.stream()
 				.map(action -> new MacroAction(actionProcessor, action.getAction(),
-						action.getRawParams(), action.getRawParams(), action.getParams(),
+						action.getRawParams(), ((MacroAction)action).getUnparsedParams(), action.getParams(),
 						action.hasOutVar() ? action.getOutVarName() : null))
 				.collect(Collectors.toList());
 	}
