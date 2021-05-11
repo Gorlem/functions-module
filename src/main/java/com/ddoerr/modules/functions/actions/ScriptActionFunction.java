@@ -54,7 +54,7 @@ public class ScriptActionFunction extends ScriptAction {
 			provider.actionAddChatMessage(action.getAction().getName() + ": " + action.getRawParams());
 		}
 		
-		String functionName = params.length == 0 ? "default" : params[0];
+		String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
 		
 		macro.setState(functionName, actions);
 		
