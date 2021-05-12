@@ -1,6 +1,7 @@
 package com.ddoerr.modules.functions;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,11 +19,14 @@ import net.eq2online.macros.scripting.exceptions.ScriptException;
 public class FunctionMacro implements IMacro {
 	private final FunctionVariableProvider variableProvider = new FunctionVariableProvider();
 	private final IScriptActionProvider provider;
+	private final IMacro parentMacro;
 	
-	public FunctionMacro(IScriptActionProvider provider) {
+	private final Map<String, Object> stateData = new HashMap<>();
+	
+	public FunctionMacro(IMacro parentMacro, IScriptActionProvider provider) {
+		this.parentMacro = parentMacro;
 		this.provider = provider;
 	}
-	
 	
 	@Override
 	public void updateVariables(boolean clock) {
@@ -142,26 +146,23 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public IMacroActionContext getContext() {
-		// TODO Auto-generated method stub
-		return null;
+		return parentMacro.getContext();
 	}
 
 	@Override
 	public Map<String, Object> getStateData() {
-		// TODO Auto-generated method stub
-		return null;
+		return stateData;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getState(String key) {
-		// TODO Auto-generated method stub
-		return null;
+		return (T) stateData.get(key);
 	}
 
 	@Override
 	public <T> void setState(String key, T value) {
-		// TODO Auto-generated method stub
-
+		stateData.put(key, value);
 	}
 
 	@Override

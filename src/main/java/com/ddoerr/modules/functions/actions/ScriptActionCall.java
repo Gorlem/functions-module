@@ -45,7 +45,7 @@ public class ScriptActionCall extends ScriptAction {
 			instance.setState(actionProcessor);
 		}
 		
-		IMacro functionMacro = new FunctionMacro(provider);
+		IMacro functionMacro = new FunctionMacro(macro, provider);
 		
 		return !actionProcessor.execute(functionMacro, macro.getContext(), false, true, true);
 	}

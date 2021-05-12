@@ -32,8 +32,11 @@ public class ScriptActionFunction extends ScriptAction {
 	@Override
 	public boolean executeConditional(IScriptActionProvider provider, IMacro macro, IMacroAction instance,
 			String rawParams, String[] params) {
-		int start = ActionProcessorHandler.from(instance).getCurrentPointer();
-		instance.setState(start);
+		
+		if (instance.getActionProcessor().getConditionalExecutionState()) {			
+			int start = ActionProcessorHandler.from(instance).getCurrentPointer();
+			instance.setState(start);
+		}
 		
 		return false;
 	}
@@ -41,6 +44,11 @@ public class ScriptActionFunction extends ScriptAction {
 	@Override
 	public boolean executeStackPop(IScriptActionProvider provider, IMacro macro, IMacroAction instance,
 			String rawParams, String[] params, IMacroAction popAction) {
+		
+		if (instance.getState() == null) {
+			return true;
+		}
+		
 		ActionProcessorHandler actionProcessorHandler = ActionProcessorHandler.from(instance);
 		
 		int start = instance.getState();
