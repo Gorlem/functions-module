@@ -23,6 +23,8 @@ public class FunctionMacro implements IMacro {
 	
 	private final Map<String, Object> stateData = new HashMap<>();
 	
+	private boolean isDead = false;
+	
 	public FunctionMacro(IMacro parentMacro, IScriptActionProvider provider) {
 		this.parentMacro = parentMacro;
 		this.provider = provider;
@@ -183,14 +185,12 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void kill() {
-		// TODO Auto-generated method stub
-
+		isDead = true;
 	}
 
 	@Override
 	public boolean isDead() {
-		// TODO Auto-generated method stub
-		return false;
+		return isDead;
 	}
 
 	@Override
