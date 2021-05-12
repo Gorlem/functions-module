@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.ddoerr.modules.functions.CachedScriptParser;
 import com.ddoerr.modules.functions.FunctionMacro;
-import com.ddoerr.modules.functions.LogProxy;
 import com.ddoerr.modules.functions.ModuleInfo;
 
 import net.eq2online.macros.core.executive.MacroActionProcessor;
@@ -46,9 +45,9 @@ public class ScriptActionCall extends ScriptAction {
 			instance.setState(actionProcessor);
 		}
 		
-		IMacro functionMacro = new FunctionMacro(macro, provider);
+		IMacro functionMacro = new FunctionMacro(provider);
 		
-		return !actionProcessor.execute(LogProxy.create(functionMacro), LogProxy.create(macro.getContext()), false, true, true);
+		return !actionProcessor.execute(functionMacro, macro.getContext(), false, true, true);
 	}
 	
 	@Override

@@ -14,15 +14,12 @@ import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.api.IStringProvider;
 import net.eq2online.macros.scripting.api.IVariableProvider;
 import net.eq2online.macros.scripting.exceptions.ScriptException;
-import net.eq2online.macros.scripting.parser.ScriptContext;
 
 public class FunctionMacro implements IMacro {
 	private final FunctionVariableProvider variableProvider = new FunctionVariableProvider();
-	private final IMacro parentMacro;
 	private final IScriptActionProvider provider;
 	
-	public FunctionMacro(IMacro parentMacro, IScriptActionProvider provider) {
-		this.parentMacro = parentMacro;
+	public FunctionMacro(IScriptActionProvider provider) {
 		this.provider = provider;
 	}
 	
@@ -125,22 +122,22 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public IFlagProvider getFlagProvider() {
-		return LogProxy.create(variableProvider);
+		return variableProvider;
 	}
 
 	@Override
 	public ICounterProvider getCounterProvider() {
-		return LogProxy.create(variableProvider);
+		return variableProvider;
 	}
 
 	@Override
 	public IStringProvider getStringProvider() {
-		return LogProxy.create(variableProvider);
+		return variableProvider;
 	}
 
 	@Override
 	public IMutableArrayProvider getArrayProvider() {
-		return LogProxy.create(variableProvider);
+		return variableProvider;
 	}
 
 	@Override

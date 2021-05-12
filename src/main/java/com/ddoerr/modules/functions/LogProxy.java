@@ -6,8 +6,6 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-import net.eq2online.macros.scripting.api.IMacro;
-
 public class LogProxy implements InvocationHandler {
 	private final Object object;
 	
