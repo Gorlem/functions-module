@@ -13,7 +13,6 @@ import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IMacroActionProcessor;
 import net.eq2online.macros.scripting.api.IReturnValue;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
-import net.eq2online.macros.scripting.api.ReturnValue;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
 
@@ -55,20 +54,33 @@ public class ScriptActionCall extends ScriptAction {
 			String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
 			
 			IMacro parent = macro;
-			List<IMacroAction> actions = macro.getState(functionName);
+			ScriptActionFunction.State functionState = macro.getState(functionName);
 			
-			while (actions == null && macro instanceof FunctionMacro) {
+			while (functionState == null && macro instanceof FunctionMacro) {
 				parent = ((FunctionMacro)parent).getParentMacro();
-				actions = parent.getState(functionName);
+				functionState = parent.getState(functionName);
 			}
 			
-			if (actions == null) {
+			if (functionState == null) {
 				provider.actionAddChatMessage("Could not find function");
 				return true;
 			}
 			
-			IMacroActionProcessor actionProcessor = MacroActionProcessor.compile(new CachedScriptParser(actions), "$${}$$", 100, 100, macros);
+			IMacroActionProcessor actionProcessor = MacroActionProcessor.compile(new CachedScriptParser(functionState.getActions()), "$${}$$", 100, 100, macros);
 			IMacro functionMacro = new FunctionMacro(macro, provider);
+			
+			List<String> arguments = functionState.getArguments();
+			for (int i = 0; i < arguments.size(); i++) {
+				if (i + 1 >= params.length) {
+					break;
+				}
+				
+				String argumentName = arguments.get(i);
+				String argumentValue = params[i + 1];
+				
+				functionMacro.setVariable(argumentName, argumentValue);
+			}
+			
 			instance.setState(state = new State(actionProcessor, functionMacro));
 		}
 		

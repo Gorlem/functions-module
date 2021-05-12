@@ -1,10 +1,13 @@
 package com.ddoerr.modules.functions.actions;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.ddoerr.modules.functions.ActionProcessorHandler;
 import com.ddoerr.modules.functions.ModuleInfo;
 
+import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
@@ -15,6 +18,24 @@ import net.eq2online.macros.scripting.parser.ScriptContext;
 @APIVersion(ModuleInfo.API_VERSION)
 public class ScriptActionFunction extends ScriptAction {
 
+	public class State {
+		private final List<IMacroAction> actions;
+		private final List<String> arguments;
+		
+		public State(List<IMacroAction> actions, List<String> arguments) {
+			this.actions = actions;
+			this.arguments = arguments;
+		}
+		
+		public List<IMacroAction> getActions() {
+			return actions;
+		}
+		
+		public List<String> getArguments() {
+			return arguments;
+		}
+	}
+	
 	public ScriptActionFunction() {
 		super(ScriptContext.MAIN, "function");
 	}
@@ -56,15 +77,17 @@ public class ScriptActionFunction extends ScriptAction {
 
 		provider.actionAddChatMessage(start + " to " + end);
 		
+		String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
+		List<String> arguments = Arrays.stream(params).skip(1).filter(name -> Variable.isValidVariableName(name)).collect(Collectors.toList());
 		
 		for (IMacroAction action : actions) {
 			provider.actionAddChatMessage(action.getAction().getName() + ": " + action.getRawParams());
 		}
 		
-		String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
+		provider.actionAddChatMessage(String.join(", ", params));		
 		
-		macro.setState(functionName, actions);
+		macro.setState(functionName, new State(actions, arguments));
 		
 		return true;
 	}

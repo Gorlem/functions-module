@@ -15,12 +15,22 @@ import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.api.IStringProvider;
 import net.eq2online.macros.scripting.api.IVariableProvider;
 import net.eq2online.macros.scripting.exceptions.ScriptException;
+import net.eq2online.macros.scripting.variable.VariableCache;
 
 public class FunctionMacro implements IMacro {
-	private final FunctionVariableProvider variableProvider = new FunctionVariableProvider();
-	private final IScriptActionProvider provider;
+	static class Cache extends VariableCache {
+		@Override
+		public Object getVariable(String variableName) {
+			return this.getCachedValue(variableName);
+		}
+	}
+	
 	private final IMacro parentMacro;
 	
+	private final IScriptActionProvider provider;
+	private final VariableCache variableCache = new Cache();
+	private final FunctionVariableProvider variableProvider = new FunctionVariableProvider();
+
 	private final Map<String, Object> stateData = new HashMap<>();
 	
 	private boolean isDead = false;
@@ -48,6 +58,12 @@ public class FunctionMacro implements IMacro {
 			return result;
 		}
 		
+		result = variableCache.getVariable(variableName);
+		
+		if (result != null) {
+			return result;
+		}
+		
 		return variableProvider.getVariable(variableName);
 	}
 
@@ -64,17 +80,17 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void setVariable(String variableName, boolean variableValue) {
-		
+		variableCache.storeVariable(variableName, variableValue);
 	}
 
 	@Override
 	public void setVariable(String variableName, int variableValue) {
-		
+		variableCache.storeVariable(variableName, variableValue);
 	}
 
 	@Override
 	public void setVariable(String variableName, String variableValue) {
-		
+		variableCache.storeVariable(variableName, variableValue);
 	}
 
 	@Override
