@@ -1,6 +1,7 @@
 package com.ddoerr.modules.functions.actions;
 
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.parser.ActionParserReturn;
 
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
@@ -21,6 +22,7 @@ public class ScriptActionReturn extends ScriptAction {
 	@Override
 	public void onInit() {
 		context.getCore().registerScriptAction(this);
+		context.getParser().addActionParser(new ActionParserReturn(context));
 	}
 	
 	@Override

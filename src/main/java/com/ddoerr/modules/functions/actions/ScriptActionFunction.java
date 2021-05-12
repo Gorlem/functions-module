@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.ddoerr.modules.functions.ActionProcessorHandler;
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.parser.ActionParserFunction;
 
 import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
@@ -42,7 +43,8 @@ public class ScriptActionFunction extends ScriptAction {
 	
 	@Override
 	public void onInit() {
-		this.context.getCore().registerScriptAction(this);
+		context.getCore().registerScriptAction(this);
+		context.getParser().addActionParser(new ActionParserFunction(context));
 	}
 	
 	@Override
