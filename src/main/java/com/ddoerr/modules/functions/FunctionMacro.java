@@ -28,6 +28,10 @@ public class FunctionMacro implements IMacro {
 		this.provider = provider;
 	}
 	
+	public IMacro getParentMacro() {
+		return parentMacro;
+	}
+	
 	@Override
 	public void updateVariables(boolean clock) {
 		// TODO Auto-generated method stub

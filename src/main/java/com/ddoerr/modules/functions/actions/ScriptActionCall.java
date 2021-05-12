@@ -34,7 +34,13 @@ public class ScriptActionCall extends ScriptAction {
 		if (actionProcessor == null) {
 			String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
 			
+			IMacro parent = macro;
 			List<IMacroAction> actions = macro.getState(functionName);
+			
+			while (actions == null && macro instanceof FunctionMacro) {
+				parent = ((FunctionMacro)parent).getParentMacro();
+				actions = parent.getState(functionName);
+			}
 			
 			if (actions == null) {
 				provider.actionAddChatMessage("Could not find function");
