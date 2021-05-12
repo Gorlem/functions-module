@@ -79,7 +79,7 @@ public class ScriptActionFunction extends ScriptAction {
 
 		provider.actionAddChatMessage(start + " to " + end);
 		
-		String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
+		String functionName = params.length == 0 ? "default" : params[0];
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
 		List<String> arguments = Arrays.stream(params).skip(1).filter(name -> Variable.isValidVariableName(name)).collect(Collectors.toList());
 		
@@ -89,7 +89,9 @@ public class ScriptActionFunction extends ScriptAction {
 		
 		provider.actionAddChatMessage(String.join(", ", params));		
 		
-		macro.setState(functionName, new State(actions, arguments));
+		macro.setState("fn#" + functionName, new State(actions, arguments));
+		
+		actionProcessorHandler.replaceActions(functionName);
 		
 		return true;
 	}

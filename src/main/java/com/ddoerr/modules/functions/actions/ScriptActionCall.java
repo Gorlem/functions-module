@@ -51,18 +51,18 @@ public class ScriptActionCall extends ScriptAction {
 		State state = instance.getState();
 		
 		if (state == null) {
-			String functionName = "fn#" + (params.length == 0 ? "default" : params[0]);
+			String functionName = params.length == 0 ? "default" : params[0];
 			
 			IMacro parent = macro;
-			ScriptActionFunction.State functionState = macro.getState(functionName);
+			ScriptActionFunction.State functionState = macro.getState("fn#" + functionName);
 			
 			while (functionState == null && macro instanceof FunctionMacro) {
 				parent = ((FunctionMacro)parent).getParentMacro();
-				functionState = parent.getState(functionName);
+				functionState = parent.getState("fn#" + functionName);
 			}
 			
 			if (functionState == null) {
-				provider.actionAddChatMessage("Could not find function");
+				provider.actionAddChatMessage("Could not find function " + functionName);
 				return true;
 			}
 			
@@ -91,6 +91,11 @@ public class ScriptActionCall extends ScriptAction {
 	public IReturnValue execute(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
 			String[] params) {
 		State state = instance.getState();
+		
+		if (state == null) {
+			return null;
+		}
+		
 		return state.macro.<IReturnValue>getState("return");
 	}
 }
