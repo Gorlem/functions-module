@@ -3,6 +3,8 @@ package com.ddoerr.modules.functions;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import net.eq2online.macros.scripting.api.IMacro;
 
@@ -15,7 +17,9 @@ public class LogProxy implements InvocationHandler {
 	
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-		System.out.println(object.getClass().getName() + " -> " + method.getName());
+		System.out.println(object.getClass().getName() +
+				" -> " + method.getName() +
+				": " + Arrays.stream(args == null ? new Object[0] : args ).map(a -> a.toString()).collect(Collectors.joining(", ")));
 		return method.invoke(object, args);
 	}
 

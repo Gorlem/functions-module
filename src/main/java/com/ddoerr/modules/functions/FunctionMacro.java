@@ -125,22 +125,22 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public IFlagProvider getFlagProvider() {
-		return variableProvider;
+		return LogProxy.create(variableProvider);
 	}
 
 	@Override
 	public ICounterProvider getCounterProvider() {
-		return variableProvider;
+		return LogProxy.create(variableProvider);
 	}
 
 	@Override
 	public IStringProvider getStringProvider() {
-		return variableProvider;
+		return LogProxy.create(variableProvider);
 	}
 
 	@Override
 	public IMutableArrayProvider getArrayProvider() {
-		return variableProvider;
+		return LogProxy.create(variableProvider);
 	}
 
 	@Override
