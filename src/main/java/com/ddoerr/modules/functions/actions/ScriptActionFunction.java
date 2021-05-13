@@ -76,19 +76,11 @@ public class ScriptActionFunction extends ScriptAction {
 		
 		int start = instance.getState();
 		int end = actionProcessorHandler.getCurrentPointer();
-
-		provider.actionAddChatMessage(start + " to " + end);
 		
 		String functionName = params.length == 0 ? "default" : params[0];
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
 		List<String> arguments = Arrays.stream(params).skip(1).filter(name -> Variable.isValidVariableName(name)).collect(Collectors.toList());
-		
-		for (IMacroAction action : actions) {
-			provider.actionAddChatMessage(action.getAction().getName() + ": " + action.getRawParams());
-		}
-		
-		provider.actionAddChatMessage(String.join(", ", params));		
-		
+
 		macro.setState("fn#" + functionName, new State(actions, arguments));
 		
 		actionProcessorHandler.replaceActions(functionName);
