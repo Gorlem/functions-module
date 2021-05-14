@@ -78,7 +78,7 @@ public class ScriptActionCall extends ScriptAction {
 				String argumentName = arguments.get(i);
 				String argumentValue = provider.expand(macro, params[i + 1], false);
 				
-				functionMacro.setVariable(argumentName, argumentValue);
+				provider.setVariable(functionMacro, argumentName, argumentValue);
 			}
 			
 			instance.setState(state = new State(actionProcessor, functionMacro));
