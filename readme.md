@@ -47,3 +47,15 @@ greet("you")
 Actions defined by the mod or other modules will always have the priority over functions.
 That means that if you e.g. define a function named log, you cannot call the function as an action.
 For those cases you can still call the functions with the `CALL` action.
+
+## Changelog
+
+### v0.1
+
+ * Initial Version
+
+### v0.2
+
+ * Fixed arguments not getting expanded. (Issue #4)
+ * Fixed passed arguments not getting parsed according to their type. (Issue #5)
+ * Function names are now case-insensitive. (Issue #1)
