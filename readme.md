@@ -59,3 +59,8 @@ For those cases you can still call the functions with the `CALL` action.
  * Fixed arguments not getting expanded. (Issue #4)
  * Fixed passed arguments not getting parsed according to their type. (Issue #5)
  * Function names are now case-insensitive. (Issue #1)
+
+### v0.3
+ * Added `functions` iterator, which has the `FUNCTIONNAME` variable. (Issue #3)
+ * Function names can now contain numbers.
+ * Fixed a bug with functions which don't contain arguments.
