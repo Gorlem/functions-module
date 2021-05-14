@@ -9,7 +9,7 @@ import net.eq2online.macros.scripting.parser.ActionParserAbstract;
 import net.eq2online.macros.scripting.parser.ScriptContext;
 
 public class ActionParserCall extends ActionParserAbstract {
-	private static Pattern actionPattern = Pattern.compile("^([a-z1-9\\_]+)\\((.+?)\\)$", Pattern.CASE_INSENSITIVE);
+	private static Pattern actionPattern = Pattern.compile("^([a-z1-9\\_]+)\\((.*?)\\)$", Pattern.CASE_INSENSITIVE);
 	
 	public ActionParserCall(ScriptContext context) {
 		super(context);
