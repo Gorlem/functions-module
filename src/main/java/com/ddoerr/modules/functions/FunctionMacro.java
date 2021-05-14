@@ -1,7 +1,9 @@
 package com.ddoerr.modules.functions;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,6 +23,7 @@ public class FunctionMacro implements IMacro {
 	
 	private final IScriptActionProvider provider;
 	private final FunctionVariableProvider variableProvider = new FunctionVariableProvider();
+	private final List<IVariableProvider> additionalVariableProviders = new ArrayList<>();
 
 	private final Map<String, Object> stateData = new HashMap<>();
 	
@@ -47,6 +50,14 @@ public class FunctionMacro implements IMacro {
 		
 		if (result != null) {
 			return result;
+		}
+		
+		for (IVariableProvider additionalProvider : additionalVariableProviders) {
+			result = additionalProvider.getVariable(variableName);
+			
+			if (result != null) {
+				return result;
+			}
 		}
 		
 		return variableProvider.getVariable(variableName);
@@ -196,14 +207,12 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void registerVariableProvider(IVariableProvider variableProvider) {
-		// TODO Auto-generated method stub
-
+		additionalVariableProviders.add(variableProvider);
 	}
 
 	@Override
 	public void unregisterVariableProvider(IVariableProvider variableProvider) {
-		// TODO Auto-generated method stub
-
+		additionalVariableProviders.remove(variableProvider);
 	}
 
 }
