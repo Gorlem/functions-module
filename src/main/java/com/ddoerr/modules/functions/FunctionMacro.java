@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import net.eq2online.macros.scripting.api.ICounterProvider;
@@ -28,6 +29,8 @@ public class FunctionMacro implements IMacro {
 	private final Map<String, Object> stateData = new HashMap<>();
 	
 	private boolean isDead = false;
+	private boolean isDirty = false;
+	private boolean isSynchronous = false;
 	
 	public FunctionMacro(IMacro parentMacro, IScriptActionProvider provider) {
 		this.parentMacro = parentMacro;
@@ -40,8 +43,7 @@ public class FunctionMacro implements IMacro {
 	
 	@Override
 	public void updateVariables(boolean clock) {
-		// TODO Auto-generated method stub
-
+		parentMacro.updateVariables(clock);
 	}
 
 	@Override
@@ -70,8 +72,7 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void onInit() {
-		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
@@ -91,55 +92,55 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void setVariables(Map<String, Object> variables) {
-		
+		for (Entry<String, Object> entry : variables.entrySet()) {
+			if (entry.getValue() instanceof Boolean) {
+				setVariable(entry.getKey(), (boolean)entry.getValue());
+			} else if (entry.getValue() instanceof Integer) {
+				setVariable(entry.getKey(), (int)entry.getValue());
+			} else if (entry.getValue() instanceof String) {
+				setVariable(entry.getKey(), (String)entry.getValue());
+			}
+		}
 	}
 
 	@Override
 	public IMacroStatus getStatus() {
-		// TODO Auto-generated method stub
-		return null;
+		return parentMacro.getStatus();
 	}
 
 	@Override
 	public IMacroTemplate getTemplate() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean play(boolean trigger, boolean clock) throws ScriptException {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void refreshPermissions() {
-		// TODO Auto-generated method stub
-
+		parentMacro.refreshPermissions();
 	}
 
 	@Override
 	public int getID() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public String getDisplayName() {
-		// TODO Auto-generated method stub
-		return null;
+		return parentMacro.getDisplayName();
 	}
 
 	@Override
 	public void setSynchronous(boolean synchronous) {
-		// TODO Auto-generated method stub
-
+		isSynchronous = synchronous;
 	}
 
 	@Override
 	public boolean isSynchronous() {
-		// TODO Auto-generated method stub
-		return false;
+		return isSynchronous;
 	}
 
 	@Override
@@ -185,14 +186,12 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void markDirty() {
-		// TODO Auto-generated method stub
-
+		isDirty = true;
 	}
 
 	@Override
 	public boolean isDirty() {
-		// TODO Auto-generated method stub
-		return false;
+		return isDirty;
 	}
 
 	@Override
