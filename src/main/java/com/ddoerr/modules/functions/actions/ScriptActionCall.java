@@ -5,6 +5,7 @@ import java.util.List;
 import com.ddoerr.modules.functions.CachedScriptParser;
 import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.parser.ActionParserCall;
 
 import net.eq2online.macros.core.executive.MacroActionProcessor;
 import net.eq2online.macros.scripting.api.APIVersion;
@@ -43,6 +44,7 @@ public class ScriptActionCall extends ScriptAction {
 	@Override
 	public void onInit() {
 		this.context.getCore().registerScriptAction(this);
+		this.context.getCore().getParser().addActionParser(new ActionParserCall(context));
 	}
 	
 	@Override
