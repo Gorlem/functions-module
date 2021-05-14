@@ -15,7 +15,6 @@ import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.api.IStringProvider;
 import net.eq2online.macros.scripting.api.IVariableProvider;
 import net.eq2online.macros.scripting.exceptions.ScriptException;
-import net.eq2online.macros.scripting.variable.VariableCache;
 
 public class FunctionMacro implements IMacro {
 	private final IMacro parentMacro;

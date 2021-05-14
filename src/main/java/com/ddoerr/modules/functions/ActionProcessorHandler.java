@@ -37,7 +37,7 @@ public class ActionProcessorHandler {
 		List<IMacroAction> actions = this.<List<IMacroAction>>getFieldValue("actions")
 				.stream()
 				.map(action -> {
-					if (action.getAction() instanceof UnrecognisedAction && action.getAction().getName().equals(name)) {
+					if (action.getAction() instanceof UnrecognisedAction && action.getAction().getName().equalsIgnoreCase(name)) {
 						IScriptAction scriptAction = ScriptContext.MAIN.getAction("call");
 						
 						String rawParams = name + "," + action.getRawParams();

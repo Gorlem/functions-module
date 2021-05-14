@@ -81,7 +81,7 @@ public class ScriptActionFunction extends ScriptAction {
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
 		List<String> arguments = Arrays.stream(params).skip(1).filter(name -> Variable.isValidVariableName(name)).collect(Collectors.toList());
 
-		macro.setState("fn#" + functionName, new State(actions, arguments));
+		macro.setState("fn#" + functionName.toLowerCase(), new State(actions, arguments));
 		
 		actionProcessorHandler.replaceActions(functionName);
 		

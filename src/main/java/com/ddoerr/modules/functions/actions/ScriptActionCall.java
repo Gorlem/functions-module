@@ -54,11 +54,11 @@ public class ScriptActionCall extends ScriptAction {
 			String functionName = params.length == 0 ? "default" : params[0];
 			
 			IMacro parent = macro;
-			ScriptActionFunction.State functionState = macro.getState("fn#" + functionName);
+			ScriptActionFunction.State functionState = macro.getState("fn#" + functionName.toLowerCase());
 			
 			while (functionState == null && macro instanceof FunctionMacro) {
 				parent = ((FunctionMacro)parent).getParentMacro();
-				functionState = parent.getState("fn#" + functionName);
+				functionState = parent.getState("fn#" + functionName.toLowerCase());
 			}
 			
 			if (functionState == null) {
