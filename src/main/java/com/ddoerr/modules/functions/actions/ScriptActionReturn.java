@@ -1,14 +1,20 @@
 package com.ddoerr.modules.functions.actions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.parser.ActionParserReturn;
 
+import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IReturnValue;
+import net.eq2online.macros.scripting.api.IReturnValueArray;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.api.ReturnValue;
+import net.eq2online.macros.scripting.api.ReturnValueArray;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
 
@@ -29,9 +35,27 @@ public class ScriptActionReturn extends ScriptAction {
 	public IReturnValue execute(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
 			String[] params) {
 		
-		String value = provider.expand(macro, rawParams, false);
+		IReturnValue returnValue;
 		
-		macro.setState("return", new ReturnValue(value));
+		if (Variable.couldBeArraySpecifier(rawParams)) {
+			String arrayName = Variable.getValidVariableOrArraySpecifier(rawParams);
+			
+			int arraySize = provider.getArraySize(macro, arrayName);
+			List<String> values = new ArrayList<String>();
+			
+			for (int i = 0; i < arraySize; i++) {
+				String arrayElement = provider.getArrayElement(macro, arrayName, i).toString();
+				values.add(arrayElement);
+			}
+			
+			returnValue = new ReturnValueArray(false);
+			((ReturnValueArray)returnValue).putStrings(values);
+		} else {
+			String value = provider.expand(macro, rawParams, false);
+			returnValue = new ReturnValue(value);
+		}
+		
+		macro.setState("return", returnValue);		
 		
 		macro.kill();
 		
