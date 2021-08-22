@@ -12,7 +12,7 @@ function <name>([variable, ...]);endfunction
 Return a value inside of an function
 
 ```
-return <value>
+return(<value>)
 ```
 
 
@@ -30,16 +30,43 @@ CALL(<name>,[value, ...])
 ```
 
 
+`<value>` can either be an array specifier (`&array[]`) or a normal string (`"Hello World"`, `%TIME%`), which gets expanded.
+
 ## Example
 
 ```
 function greet(&name)
 	&message = "Hello %&name%!"
 	log(%&message%)
-	return %&message%
+	return(%&message%)
 endfunction
 
 greet("you")
+```
+
+```
+function logarray(&array[])
+	foreach(#arr[],&content,#index)
+		log(%#index% => %&content%)
+	next
+endfunction
+
+unset(&test[])
+&test[] = "Hello"
+&test[] = "World"
+
+logarray(&test[])
+```
+
+```
+function fill(#amount,&filler)
+	for(#i,1,%#amount%)
+		&array[] = %&filler%
+	next
+	return(&array[])
+endfunction
+
+&filled[] = fill(5,"---")
 ```
 
 ## Notes
@@ -64,3 +91,7 @@ For those cases you can still call the functions with the `CALL` action.
  * Added `functions` iterator, which has the `FUNCTIONNAME` variable. (Issue #3)
  * Function names can now contain numbers.
  * Fixed a bug with functions which don't contain arguments.
+
+### v0.4
+ * Function arguments and return values can now be arrays. (Issue #6)
+ * The `RETURN` syntax without brackets will be removed in v1.0, please use it like a normal action with brackets.
