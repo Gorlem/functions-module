@@ -7,7 +7,9 @@ import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
 
+import joptsimple.internal.Strings;
 import net.eq2online.macros.core.executive.MacroActionProcessor;
+import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
@@ -72,15 +74,29 @@ public class ScriptActionCall extends ScriptAction {
 			IMacro functionMacro = new FunctionMacro(macro, provider);
 			
 			List<String> arguments = functionState.getArguments();
+			
 			for (int i = 0; i < arguments.size(); i++) {
 				if (i + 1 >= params.length) {
 					break;
 				}
 				
 				String argumentName = arguments.get(i);
-				String argumentValue = provider.expand(macro, params[i + 1], false);
 				
-				provider.setVariable(functionMacro, argumentName, argumentValue);
+				if (Variable.isValidScalarVariableName(argumentName)) {					
+					String argumentValue = provider.expand(macro, params[i + 1], false);
+					provider.setVariable(functionMacro, argumentName, argumentValue);
+				} else if (Variable.couldBeArraySpecifier(argumentName)) {
+					String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
+					
+					int arraySize = provider.getArraySize(macro, arrayName);
+					
+					for (int j = 0; j < arraySize; j++) {
+						String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
+						String innerArrayName = Variable.getValidVariableOrArraySpecifier(argumentName);
+						
+						provider.pushValueToArray(functionMacro, innerArrayName, arrayElement);
+					}
+				}
 			}
 			
 			instance.setState(state = new State(actionProcessor, functionMacro));
