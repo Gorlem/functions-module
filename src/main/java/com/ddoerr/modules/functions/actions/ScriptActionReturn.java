@@ -44,15 +44,22 @@ public class ScriptActionReturn extends ScriptAction {
 			List<String> values = new ArrayList<String>();
 			
 			for (int i = 0; i < arraySize; i++) {
-				String arrayElement = provider.getArrayElement(macro, arrayName, i).toString();
-				values.add(arrayElement);
+				values.add(provider.getArrayElement(macro, arrayName, i).toString());
 			}
 			
 			returnValue = new ReturnValueArray(false);
 			((ReturnValueArray)returnValue).putStrings(values);
+		} else if (params.length > 1) {
+			List<String> values = new ArrayList<String>();
+			
+			for (String param : params) {
+				values.add(provider.expand(macro, param, false));
+			}
+			
+			returnValue = new ReturnValueArray(false);
+			((ReturnValueArray)returnValue).putStrings(values); 
 		} else {
-			String value = provider.expand(macro, rawParams, false);
-			returnValue = new ReturnValue(value);
+			returnValue = new ReturnValue(provider.expand(macro, rawParams, false));
 		}
 		
 		macro.setState("return", returnValue);		

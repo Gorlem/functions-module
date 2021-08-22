@@ -32,7 +32,7 @@ CALL(<name>,[value, ...])
 
 `<value>` can either be an array specifier (`&array[]`) or a normal string (`"Hello World"`, `%TIME%`), which gets expanded.
 
-## Example
+## Examples
 
 ```
 function greet(&name)
@@ -69,6 +69,14 @@ endfunction
 &filled[] = fill(5,"---")
 ```
 
+```
+function data()
+	return("Alex","Sam","Kim")
+endfunction
+
+&names[] = data()
+```
+
 ## Notes
 
 Actions defined by the mod or other modules will always have the priority over functions.
@@ -96,3 +104,4 @@ For those cases you can still call the functions with the `CALL` action.
  * Function arguments and return values can now be arrays. (Issue #6)
  * The `RETURN` syntax without brackets will be removed in v1.0, please use it like a normal action with brackets.
  * Functions can be called dynamically based on variables with the `CALL` action. (Issue #8)
+ * `RETURN` also now allows multiple parameters, which will each get expanded and turned into an array.
