@@ -55,7 +55,7 @@ public class ScriptActionCall extends ScriptAction {
 		State state = instance.getState();
 		
 		if (state == null) {
-			String functionName = params.length == 0 ? "default" : params[0];
+			String functionName = params.length == 0 ? "default" : provider.expand(macro, params[0], false);
 			
 			IMacro parent = macro;
 			ScriptActionFunction.State functionState = macro.getState("fn#" + functionName.toLowerCase());

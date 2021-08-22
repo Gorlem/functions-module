@@ -23,7 +23,7 @@ Call a defined function
 ```
 
 
-Alternative way of calling functions
+Alternative way of calling functions (`<name>` can contain variables)
 
 ```
 CALL(<name>,[value, ...])
@@ -95,3 +95,4 @@ For those cases you can still call the functions with the `CALL` action.
 ### v0.4
  * Function arguments and return values can now be arrays. (Issue #6)
  * The `RETURN` syntax without brackets will be removed in v1.0, please use it like a normal action with brackets.
+ * Functions can be called dynamically based on variables with the `CALL` action. (Issue #8)
