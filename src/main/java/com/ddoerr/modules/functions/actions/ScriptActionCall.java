@@ -1,6 +1,8 @@
 package com.ddoerr.modules.functions.actions;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.ddoerr.modules.functions.CachedScriptParser;
 import com.ddoerr.modules.functions.FunctionMacro;
@@ -75,38 +77,47 @@ public class ScriptActionCall extends ScriptAction {
 			
 			List<Argument> arguments = functionState.getArguments();
 			
-			for (int i = 0; i < arguments.size(); i++) {
+			for (int i = 0; i < arguments.size(); i++) {					
 				boolean hasRemainingValues = i + 1 < params.length;
 				
 				Argument argument = arguments.get(i);
-				
-				if (!hasRemainingValues && !argument.hasDefaultValue()) {
-					break;
-				}
-				
-				if (!argument.isValid()) {
-					continue;
-				} else if (argument.isArray()) {
-					if (hasRemainingValues) {						
-						String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
-						int arraySize = provider.getArraySize(macro, arrayName);
-						
-						for (int j = 0; j < arraySize; j++) {
-							String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
+					
+				try {
+					if (!hasRemainingValues && !argument.hasDefaultValue()) {
+						break;
+					}
+					
+					if (!argument.isValid()) {
+						continue;
+					} else if (argument.isCatchAll()) {
+						for (String value : Arrays.stream(params).skip(i + 1).collect(Collectors.toList())) {
+							String expandedValue = provider.expand(macro, value, false);
+							provider.pushValueToArray(functionMacro, argument.getName(), expandedValue);
+						}
+					} else if (argument.isArray()) {
+						if (hasRemainingValues) {						
+							String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
+							int arraySize = provider.getArraySize(macro, arrayName);
 							
-							provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
+							for (int j = 0; j < arraySize; j++) {
+								String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
+								
+								provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
+							}
+						} else {
+							String[] defaultValues = (String[])argument.getDefaultValue();
+							
+							for (String value : defaultValues) {
+								provider.pushValueToArray(functionMacro, argument.getName(), value);
+							}
 						}
 					} else {
-						String[] defaultValues = (String[])argument.getDefaultValue();
-						
-						for (String value : defaultValues) {
-							provider.pushValueToArray(functionMacro, argument.getName(), value);
-						}
+						String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();
+						String expandedValue = provider.expand(macro, argumentValue, false);
+						provider.setVariable(functionMacro, argument.getName(), expandedValue);
 					}
-				} else {
-					String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();
-					String expandedValue = provider.expand(macro, argumentValue, false);
-					provider.setVariable(functionMacro, argument.getName(), expandedValue);
+				} catch (Exception e) {
+					provider.actionAddChatMessage("Exception happened while trying to handle the " + (i + 1) + ". argument (" + argument.getName() + ") of the function " + functionName);
 				}
 			}
 			

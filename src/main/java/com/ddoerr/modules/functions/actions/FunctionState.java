@@ -21,20 +21,31 @@ public class FunctionState {
 		private static Pattern arrayPattern = Pattern.compile("^" + variablePattern + "\\[\\]($|,)");
 		private static Pattern arrayDefaultPattern = Pattern.compile("^" + variablePattern + "\\[\\]=\\[(.+?)\\]($|,)");
 		
+		private static Pattern catchAllPattern = Pattern.compile("^..." + variablePattern + "\\[\\]$");
+		
 		private final String name;
 		private final boolean isArray;
 		private final Object defaultValue;
+		private final boolean isCatchAll;
 		
 		public Argument(String name, boolean isArray) {
 			this.name = name;
 			this.isArray = isArray;
 			this.defaultValue = null;
+			this.isCatchAll = false;
+		}
+		public Argument(String name, boolean isArray, boolean isCatchAll) {
+			this.name = name;
+			this.isArray = isArray;
+			this.defaultValue = null;
+			this.isCatchAll = isCatchAll;
 		}
 		
 		public Argument(String name, boolean isArray, Object defaultValue) {
 			this.name = name;
 			this.isArray = isArray;
 			this.defaultValue = defaultValue;
+			this.isCatchAll = false;
 		}
 
 		public String getName() {
@@ -55,6 +66,10 @@ public class FunctionState {
 		
 		public boolean hasDefaultValue() {
 			return defaultValue != null;
+		}
+		
+		public boolean isCatchAll() {
+			return isCatchAll;
 		}
 		
 		public static List<Argument> tokenize(String input) {
@@ -102,6 +117,13 @@ public class FunctionState {
 					input = input.substring(arrayDefaultMatcher.end());
 					continue;
 
+				}
+				
+				Matcher catchAllMatcher = catchAllPattern.matcher(input);
+				
+				if (catchAllMatcher.find()) {
+					arguments.add(new Argument(catchAllMatcher.group(1), true, true));
+					break;
 				}
 				
 				arguments.add(Invalid);
