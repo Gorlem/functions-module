@@ -11,7 +11,6 @@ import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IReturnValue;
-import net.eq2online.macros.scripting.api.IReturnValueArray;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.api.ReturnValue;
 import net.eq2online.macros.scripting.api.ReturnValueArray;

@@ -7,7 +7,6 @@ import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
 
-import joptsimple.internal.Strings;
 import net.eq2online.macros.core.executive.MacroActionProcessor;
 import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
