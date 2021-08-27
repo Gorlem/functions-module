@@ -7,6 +7,9 @@ Function definition
 ```
 function <name>([variable, ...]);endfunction
 ```
+Variables can contain default values.
+Example: `function default(&arg1="Arg1",#arg2=2,arg3=true,&array[]=["One","Two"])`
+
 
 
 Return a value inside of an function
@@ -59,22 +62,38 @@ logarray(&test[])
 ```
 
 ```
-function fill(#amount,&filler)
+function fill(#amount,&filler="---")
 	for(#i,1,%#amount%)
 		&array[] = %&filler%
 	next
 	return(&array[])
 endfunction
 
-&filled[] = fill(5,"---")
+&filled[] = fill(5)
 ```
 
 ```
-function data()
-	return("Alex","Sam","Kim")
+function data(#scores[]=[5,2,4])
+	return("Alex %#scores[0]%","Sam %#scores[1]%","Kim %#scores[2]%")
 endfunction
 
 &names[] = data()
+```
+
+```
+function max(...#numbers[])
+	#max = 0
+	
+	foreach(#numbers[],#number)
+		if(#number > #max)
+			#max = #number
+		endif
+	next
+	
+	return(%#max%)
+endfunction
+
+#max = max(1,56,43,-10,55)
 ```
 
 ## Notes
@@ -105,3 +124,9 @@ For those cases you can still call the functions with the `CALL` action.
  * The `RETURN` syntax without brackets will be removed in v1.0, please use it like a normal action with brackets.
  * Functions can be called dynamically based on variables with the `CALL` action. (Issue #8)
  * `RETURN` also now allows multiple parameters, which will each get expanded and turned into an array.
+
+### v0.5
+ * Arguments can now contain default values, in case no value was provided for them by the caller
+ 	* Example: `function default(&arg1="Arg1",#arg2=2,arg3=true,&array[]=["One","Two"])`
+ * The last argument can be an catch-all array
+ 	* Example: `function catch(...&array[])` `catch("One","Two","Three")`
