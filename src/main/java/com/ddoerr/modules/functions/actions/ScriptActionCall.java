@@ -76,27 +76,35 @@ public class ScriptActionCall extends ScriptAction {
 			List<Argument> arguments = functionState.getArguments();
 			
 			for (int i = 0; i < arguments.size(); i++) {
+				boolean hasRemainingValues = i + 1 < params.length;
+				
 				Argument argument = arguments.get(i);
 				
-				provider.actionAddChatMessage(argument.getName() + ": " + argument.getDefaultValue());
-				
-				if (i + 1 >= params.length && !argument.hasDefaultValue()) {
+				if (!hasRemainingValues && !argument.hasDefaultValue()) {
 					break;
 				}
 				
 				if (!argument.isValid()) {
 					continue;
 				} else if (argument.isArray()) {
-					String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
-					int arraySize = provider.getArraySize(macro, arrayName);
-					
-					for (int j = 0; j < arraySize; j++) {
-						String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
+					if (hasRemainingValues) {						
+						String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
+						int arraySize = provider.getArraySize(macro, arrayName);
 						
-						provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
+						for (int j = 0; j < arraySize; j++) {
+							String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
+							
+							provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
+						}
+					} else {
+						String[] defaultValues = (String[])argument.getDefaultValue();
+						
+						for (String value : defaultValues) {
+							provider.pushValueToArray(functionMacro, argument.getName(), value);
+						}
 					}
 				} else {
-					String argumentValue = i + 1 >= params.length ? argument.getDefaultValue() : params[i + 1];
+					String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();
 					String expandedValue = provider.expand(macro, argumentValue, false);
 					provider.setVariable(functionMacro, argument.getName(), expandedValue);
 				}

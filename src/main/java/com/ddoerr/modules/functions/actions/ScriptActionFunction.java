@@ -9,6 +9,7 @@ import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.actions.FunctionState.Argument;
 import com.ddoerr.modules.functions.parser.ActionParserFunction;
 
+import net.eq2online.macros.core.executive.MacroAction;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
@@ -61,10 +62,7 @@ public class ScriptActionFunction extends ScriptAction {
 		
 		String functionName = params.length == 0 ? "default" : params[0];
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
-		List<Argument> arguments = Arrays.stream(params)
-				.skip(1)
-				.map(name -> Argument.parse(name))
-				.collect(Collectors.toList());
+		List<Argument> arguments = Argument.tokenize(((MacroAction)instance).getUnparsedParams());
 
 		macro.setState("fn#" + functionName.toLowerCase(), new FunctionState(actions, arguments));
 		

@@ -1,5 +1,7 @@
 package com.ddoerr.modules.functions.actions;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,14 +12,18 @@ import net.eq2online.macros.scripting.parser.ScriptCore;
 public class FunctionState {
 	public static class Argument {
 		public static Argument Invalid = new Argument(null, false);
+
+		private static String variablePattern = "([&#]?(?:[a-z](?:[a-z0-9_\\-]*)))";
 		
-		private static Pattern defaultPattern = Pattern.compile("^([&#]?(?:[a-z](?:[a-z0-9_\\-]*)))=(.+)$");
-		private static Pattern arrayPattern = Pattern.compile("^([&#]?([a-z]([a-z0-9_\\\\-]*)))\\[\\]$");
-		private static Pattern scalarPattern = Pattern.compile("^([&#]?([a-z]([a-z0-9_\\\\-]*)))$");
+		private static Pattern scalarPattern = Pattern.compile("^" + variablePattern + "($|,)");
+		private static Pattern scalarDefaultPattern = Pattern.compile("^" + variablePattern + "=(.+?)($|,)");
+
+		private static Pattern arrayPattern = Pattern.compile("^" + variablePattern + "\\[\\]($|,)");
+		private static Pattern arrayDefaultPattern = Pattern.compile("^" + variablePattern + "\\[\\]=\\[(.+?)\\]($|,)");
 		
 		private final String name;
 		private final boolean isArray;
-		private final String defaultValue;
+		private final Object defaultValue;
 		
 		public Argument(String name, boolean isArray) {
 			this.name = name;
@@ -25,7 +31,7 @@ public class FunctionState {
 			this.defaultValue = null;
 		}
 		
-		public Argument(String name, boolean isArray, String defaultValue) {
+		public Argument(String name, boolean isArray, Object defaultValue) {
 			this.name = name;
 			this.isArray = isArray;
 			this.defaultValue = defaultValue;
@@ -35,7 +41,7 @@ public class FunctionState {
 			return name;
 		}
 
-		public String getDefaultValue() {
+		public Object getDefaultValue() {
 			return defaultValue;
 		}
 		
@@ -51,27 +57,64 @@ public class FunctionState {
 			return defaultValue != null;
 		}
 		
-		public static Argument parse(String input) {
-			Matcher scalarMatcher = scalarPattern.matcher(input);
+		public static List<Argument> tokenize(String input) {
+			int index = input.indexOf(',');
 			
-			if (scalarMatcher.matches()) {
-				return new Argument(scalarMatcher.group(1), false);
+			if (index == -1) {
+				return Collections.emptyList();
 			}
 			
-			Matcher arrayMatcher = arrayPattern.matcher(input);
+			List<Argument> arguments = new ArrayList<Argument>();
+			input = input.substring(index + 1);
 			
-			if (arrayMatcher.matches()) {
-				return new Argument(arrayMatcher.group(1), true);
+			while (!input.isEmpty()) {
+				System.out.println(input);
+				Matcher scalarMatcher = scalarPattern.matcher(input);
+				
+				if (scalarMatcher.find()) {
+					arguments.add(new Argument(scalarMatcher.group(1), false));
+					input = input.substring(scalarMatcher.end());
+					continue;
+				}
+				
+				Matcher scalarDefaultMatcher = scalarDefaultPattern.matcher(input);
+				
+				if (scalarDefaultMatcher.find()) {
+					String[] tokenized = ScriptCore.tokenize(scalarDefaultMatcher.group(2), (char)0, '"', '"', '\\', new StringBuilder());
+					arguments.add(new Argument(scalarDefaultMatcher.group(1), false, tokenized[0]));
+					input = input.substring(scalarDefaultMatcher.end());
+					continue;
+				}
+				
+				Matcher arrayMatcher = arrayPattern.matcher(input);
+				
+				if (arrayMatcher.find()) {
+					arguments.add(new Argument(arrayMatcher.group(1), true));
+					input = input.substring(arrayMatcher.end());
+					continue;
+				}
+				
+				Matcher arrayDefaultMatcher = arrayDefaultPattern.matcher(input);
+				
+				if (arrayDefaultMatcher.find()) {
+					String[] tokenized = ScriptCore.tokenize(arrayDefaultMatcher.group(2), ',', '"', '"', '\\', new StringBuilder());
+					arguments.add(new Argument(arrayDefaultMatcher.group(1), true, tokenized));
+					input = input.substring(arrayDefaultMatcher.end());
+					continue;
+
+				}
+				
+				arguments.add(Invalid);
+				
+				index = input.indexOf(',');
+				if (index == -1) {
+					break;
+				}
+				
+				input = input.substring(index + 1);
 			}
 			
-			Matcher defaultMatcher = defaultPattern.matcher(input);
-			
-			if (defaultMatcher.matches()) {
-				String[] tokenized = ScriptCore.tokenize(defaultMatcher.group(2), (char)0, '"', '"', '\\', new StringBuilder());
-				return new Argument(defaultMatcher.group(1), false, tokenized[0]);
-			}
-			
-			return Invalid;
+			return arguments;
 		}
 	}
 	
