@@ -5,6 +5,7 @@ import java.util.List;
 import com.ddoerr.modules.functions.CachedScriptParser;
 import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.actions.FunctionState.Argument;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
 
 import net.eq2online.macros.core.executive.MacroActionProcessor;
@@ -57,7 +58,7 @@ public class ScriptActionCall extends ScriptAction {
 			String functionName = params.length == 0 ? "default" : provider.expand(macro, params[0], false);
 			
 			IMacro parent = macro;
-			ScriptActionFunction.State functionState = macro.getState("fn#" + functionName.toLowerCase());
+			FunctionState functionState = macro.getState("fn#" + functionName.toLowerCase());
 			
 			while (functionState == null && macro instanceof FunctionMacro) {
 				parent = ((FunctionMacro)parent).getParentMacro();
@@ -72,29 +73,32 @@ public class ScriptActionCall extends ScriptAction {
 			IMacroActionProcessor actionProcessor = MacroActionProcessor.compile(new CachedScriptParser(functionState.getActions()), "$${}$$", 100, 100, macros);
 			IMacro functionMacro = new FunctionMacro(macro, provider);
 			
-			List<String> arguments = functionState.getArguments();
+			List<Argument> arguments = functionState.getArguments();
 			
 			for (int i = 0; i < arguments.size(); i++) {
-				if (i + 1 >= params.length) {
+				Argument argument = arguments.get(i);
+				
+				provider.actionAddChatMessage(argument.getName() + ": " + argument.getDefaultValue());
+				
+				if (i + 1 >= params.length && !argument.hasDefaultValue()) {
 					break;
 				}
 				
-				String argumentName = arguments.get(i);
-				
-				if (Variable.isValidScalarVariableName(argumentName)) {					
-					String argumentValue = provider.expand(macro, params[i + 1], false);
-					provider.setVariable(functionMacro, argumentName, argumentValue);
-				} else if (Variable.couldBeArraySpecifier(argumentName)) {
+				if (!argument.isValid()) {
+					continue;
+				} else if (argument.isArray()) {
 					String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
-					
 					int arraySize = provider.getArraySize(macro, arrayName);
 					
 					for (int j = 0; j < arraySize; j++) {
 						String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
-						String innerArrayName = Variable.getValidVariableOrArraySpecifier(argumentName);
 						
-						provider.pushValueToArray(functionMacro, innerArrayName, arrayElement);
+						provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
 					}
+				} else {
+					String argumentValue = i + 1 >= params.length ? argument.getDefaultValue() : params[i + 1];
+					String expandedValue = provider.expand(macro, argumentValue, false);
+					provider.setVariable(functionMacro, argument.getName(), expandedValue);
 				}
 			}
 			
