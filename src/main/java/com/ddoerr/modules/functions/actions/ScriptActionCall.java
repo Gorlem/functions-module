@@ -18,6 +18,8 @@ import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IMacroActionProcessor;
 import net.eq2online.macros.scripting.api.IReturnValue;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
+import net.eq2online.macros.scripting.api.IStringProvider;
+import net.eq2online.macros.scripting.api.ReturnValue;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
 
@@ -132,8 +134,10 @@ public class ScriptActionCall extends ScriptAction {
 			String[] params) {
 		State state = instance.getState();
 		
-		if (state == null) {
-			return null;
+		if (state == null || state.macro.getState("return") == null) {
+			// Makes sure that you can always assign the result of a function call to a variable
+			// Otherwise it would throw an exception
+			return new ReturnValue(IStringProvider.EMPTY);
 		}
 		
 		return state.macro.<IReturnValue>getState("return");
