@@ -32,7 +32,7 @@ endfunction
 
 ## common-data.txt examples
 
-[arrayy(...&values[])](common-data.txt#L1)
+[array(...&values[])](common-data.txt#L1)
 ```
 #array1[] = array(1,2,3,4,5)
 // => [1, 2, 3, 4, 5]
