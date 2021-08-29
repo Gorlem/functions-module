@@ -126,7 +126,11 @@ For those cases you can still call the functions with the `CALL` action.
  * `RETURN` also now allows multiple parameters, which will each get expanded and turned into an array.
 
 ### v0.5
- * Arguments can now contain default values, in case no value was provided for them by the caller
+ * Arguments can now contain default values, in case no value was provided for them by the caller.
  	* Example: `function default(&arg1="Arg1",#arg2=2,arg3=true,&array[]=["One","Two"])`
- * The last argument can be an catch-all array
+ * The last argument can be an catch-all array.
  	* Example: `function catch(...&array[])` `catch("One","Two","Three")`
+
+### v0.5.1
+ * Functions will now always return a result. If he function itself returned nothing, it will be an empty string.
+ * Fixed a bug related to finding a function in higher scopes.
