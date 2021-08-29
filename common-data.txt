@@ -1,0 +1,28 @@
+// Creates an array with the specified values in one line
+function array(...&values[])
+	return(&values[])
+endfunction
+
+// Creates an array filled with values between #start and #stop (both inclusive),
+// where the next value is increased by #step
+function range(#start,#stop=-1,#step=1)
+	if(#stop == -1)
+		#stop = #start
+		#start = 0
+	endif
+
+	for(#i = %#start% to %#stop% step %#step%)
+		&result[] = %#i%
+	next
+
+	return(&result[])
+endfunction
+
+// Creates an array of the size #amount filled with the value of &filler
+function fill(#amount,&filler)
+	for(#i,1,%#amount%)
+		&result[] = %&filler%
+	next
+	
+	return(&result[])
+endfunction

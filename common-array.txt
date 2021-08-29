@@ -1,0 +1,79 @@
+// Iterates over the &array[] and calls the &function for each entry
+function each(&array[],&function)
+	foreach(&array[],&entry)
+		call(%&function%,%&entry%)
+	next
+endfunction
+
+// Iterates over the &array[] and assigns each entry the result of the &function
+function select(&array[],&function)
+	foreach(&array[],&entry,#index)
+		&array[%#index%] = call(%&function%,%&entry%)
+	next
+	
+	return(&array[])
+endfunction
+
+// Iterates over the &array[] and filters out every entry where the &function returns false
+function where(&array[],&function)
+	foreach(&array[],&entry)
+		result = call(%&function%,%&entry%)
+		if(result)
+			&result[] = %&entry%
+		endif
+	next
+	
+	return(&result[])
+endfunction
+
+// Iterates over the &instructions[] and calls a specified function with the &array[]
+// as the first argument and whatever you set after the arrow (->) as the second argument
+// A instruction usually looks like this: `each->print`
+function chain(&array[],...&instructions[])
+	foreach(&instructions[],&instruction)
+		&out[] = split("->",%&instruction%)
+		&array[] = call(%&out[0]%,&array[],%&out[1]%)
+	next
+	
+	return(&array[])
+endfunction
+
+// Returns the first non-empty entry in the &array[]
+function first(&array[])
+	foreach(&array[],&entry)
+		if(&entry != "")
+			return(%&entry%)
+		endif
+	next
+endfunction
+
+// Returns the last entry in the &array[]
+function last(&array[])
+	#size = arraysize(&array[])
+	#index = #size - 1
+	return(%&array[%#index%]%)
+endfunction
+
+// Returns a new array based on &array[], without the first #amount entries
+function skip(&array[],#amount)
+	foreach(&array[],&entry,#index)
+		if(#index >= #amount)
+			&result[] = %&entry%
+		endif
+	next
+	
+	return(&result[])
+endfunction
+
+// Returns a new array based on &array, with only the first #amount entries
+function take(&array[],#amount)
+	foreach(&array[],&entry,#index)
+		if(#index >= #amount)
+			break
+		endif
+		
+		&result[] = %&entry%
+	next
+	
+	return(&result[])
+endfunction
