@@ -1,7 +1,6 @@
 package com.ddoerr.modules.functions.actions;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.parser.ActionParserChainedCall;
@@ -17,7 +16,7 @@ import net.eq2online.macros.scripting.api.IScriptActionProvider;
 
 @APIVersion(ModuleInfo.API_VERSION)
 public class ScriptActionChainedCall extends ScriptActionCall {
-	private static String CHAIN_ARRAY = "&chain__" +  UUID.randomUUID().toString();
+	private static String CHAIN_ARRAY = "&functions--variable--internal";
 	
 	public ScriptActionChainedCall() {
 		super("chainedcall");
