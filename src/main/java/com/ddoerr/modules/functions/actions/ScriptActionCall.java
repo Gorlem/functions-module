@@ -9,6 +9,7 @@ import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.actions.FunctionState.Argument;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
+import com.google.common.base.Strings;
 
 import net.eq2online.macros.core.executive.MacroActionProcessor;
 import net.eq2online.macros.scripting.Variable;
@@ -125,6 +126,9 @@ public class ScriptActionCall extends ScriptAction {
 					}
 				} catch (Exception e) {
 					provider.actionAddChatMessage("Exception happened while trying to handle the " + (i + 1) + ". argument (" + argument.getName() + ") of the function " + functionName);
+					
+					System.out.println(String.join(",", params));
+					e.printStackTrace();
 				}
 			}
 			
@@ -146,7 +150,8 @@ public class ScriptActionCall extends ScriptAction {
 		}
 		
 		IReturnValue returnValue = state.macro.<IReturnValue>getState("return");
-		macro.setState("chain", returnValue);
+		macro.setState("chain_value", returnValue);
+		macro.setState("chain_variable", instance.getOutVarName());
 		return returnValue;
 	}
 }

@@ -61,7 +61,8 @@ public class ScriptActionChain extends ScriptAction {
 			returnValue = new ReturnValue(provider.expand(macro, rawParams, false));
 		}
 		
-		macro.setState("chain", returnValue);
+		macro.setState("chain_value", returnValue);
+		macro.setState("chain_variable", instance.getOutVarName());
 		
 		return returnValue;
 	}

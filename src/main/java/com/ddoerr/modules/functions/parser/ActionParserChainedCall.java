@@ -17,12 +17,10 @@ public class ActionParserChainedCall extends ActionParserAbstract {
 	
 	@Override
 	public IMacroAction parse(IMacroActionProcessor actionProcessor, String scriptEntry) {
-		System.out.println(scriptEntry);
 		Matcher matcher = chainPattern.matcher(scriptEntry);
         
 		if (matcher.matches())
         {
-			System.out.println("matches");
             String name = matcher.group(1);
             String parameters = matcher.group(2);
             

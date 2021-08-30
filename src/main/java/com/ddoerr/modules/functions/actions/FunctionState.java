@@ -83,7 +83,6 @@ public class FunctionState {
 			input = input.substring(index + 1);
 			
 			while (!input.isEmpty()) {
-				System.out.println(input);
 				Matcher scalarMatcher = scalarPattern.matcher(input);
 				
 				if (scalarMatcher.find()) {
