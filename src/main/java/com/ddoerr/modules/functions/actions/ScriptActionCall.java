@@ -47,6 +47,11 @@ public class ScriptActionCall extends ScriptAction {
 		super(ScriptContext.MAIN, "call");
 	}
 	
+
+	public ScriptActionCall(String name) {
+		super(ScriptContext.MAIN, name);
+	}
+	
 	@Override
 	public void onInit() {
 		this.context.getCore().registerScriptAction(this);
@@ -140,6 +145,8 @@ public class ScriptActionCall extends ScriptAction {
 			return new ReturnValue(IStringProvider.EMPTY);
 		}
 		
-		return state.macro.<IReturnValue>getState("return");
+		IReturnValue returnValue = state.macro.<IReturnValue>getState("return");
+		macro.setState("chain", returnValue);
+		return returnValue;
 	}
 }
