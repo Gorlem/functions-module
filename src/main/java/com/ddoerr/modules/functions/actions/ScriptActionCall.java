@@ -4,19 +4,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.ddoerr.modules.functions.ActionExecutable;
 import com.ddoerr.modules.functions.CachedScriptParser;
+import com.ddoerr.modules.functions.Executable;
+import com.ddoerr.modules.functions.FunctionExecutable;
 import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.VariableHandler;
 import com.ddoerr.modules.functions.actions.FunctionState.Argument;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
 
+import net.eq2online.macros.core.executive.MacroAction;
 import net.eq2online.macros.core.executive.MacroActionProcessor;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IMacroActionProcessor;
 import net.eq2online.macros.scripting.api.IReturnValue;
+import net.eq2online.macros.scripting.api.IScriptAction;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
@@ -59,9 +66,9 @@ public class ScriptActionCall extends ScriptAction {
 	@Override
 	public boolean canExecuteNow(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
 			String[] params) {
-		State state = instance.getState();
+		Executable executable = instance.getState();
 		
-		if (state == null) {
+		if (executable == null) {
 			String functionName = params.length == 0 ? "default" : provider.expand(macro, params[0], false);
 			
 			IMacro parent = macro;
@@ -72,73 +79,92 @@ public class ScriptActionCall extends ScriptAction {
 				functionState = parent.getState("fn#" + functionName.toLowerCase());
 			}
 			
-			if (functionState == null) {
-				provider.actionAddChatMessage("Could not find function " + functionName);
-				return true;
-			}
-			
-			IMacroActionProcessor actionProcessor = MacroActionProcessor.compile(new CachedScriptParser(functionState.getActions()), "$${}$$", 100, 100, macros);
-			IMacro functionMacro = new FunctionMacro(macro, provider);
-			
-			List<Argument> arguments = functionState.getArguments();
-			
-			for (int i = 0; i < arguments.size(); i++) {					
-				boolean hasRemainingValues = i + 1 < params.length;
+			if (functionState != null) {			
+				IMacroActionProcessor actionProcessor = MacroActionProcessor.compile(new CachedScriptParser(functionState.getActions()), "$${}$$", 100, 100, macros);
+				IMacro functionMacro = new FunctionMacro(macro, provider);
 				
-				Argument argument = arguments.get(i);
+				List<Argument> arguments = functionState.getArguments();
+				
+				for (int i = 0; i < arguments.size(); i++) {					
+					boolean hasRemainingValues = i + 1 < params.length;
 					
-				try {
-					if (!hasRemainingValues && !argument.hasDefaultValue()) {
-						break;
-					}
-					
-					if (!argument.isValid()) {
-						continue;
-					} else if (argument.isCatchAll()) {
-						List<String> values = Arrays.stream(params)
-							.skip(i + 1)
-							.map((value) -> VariableHandler.expand(macro, value))
-							.collect(Collectors.toList());
+					Argument argument = arguments.get(i);
 						
-						VariableHandler.setArray(functionMacro, argument.getName(), values);
-					} else if (argument.isArray()) {
-						if (hasRemainingValues) {
-							VariableHandler.copyArray(macro, params[i + 1], functionMacro, argument.getName());
-						} else {
-							String[] defaultValues = (String[])argument.getDefaultValue();							
-							VariableHandler.setArray(functionMacro, argument.getName(), defaultValues);
+					try {
+						if (!hasRemainingValues && !argument.hasDefaultValue()) {
+							break;
 						}
-					} else {
-						String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();						
-						String expandedValue = VariableHandler.expand(macro, argumentValue);
-						VariableHandler.setScalar(functionMacro, argument.getName(), expandedValue);
+						
+						if (!argument.isValid()) {
+							continue;
+						} else if (argument.isCatchAll()) {
+							List<String> values = Arrays.stream(params)
+								.skip(i + 1)
+								.map((value) -> VariableHandler.expand(macro, value))
+								.collect(Collectors.toList());
+							
+							VariableHandler.setArray(functionMacro, argument.getName(), values);
+						} else if (argument.isArray()) {
+							if (hasRemainingValues) {
+								VariableHandler.copyArray(macro, params[i + 1], functionMacro, argument.getName());
+							} else {
+								String[] defaultValues = (String[])argument.getDefaultValue();							
+								VariableHandler.setArray(functionMacro, argument.getName(), defaultValues);
+							}
+						} else {
+							String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();						
+							String expandedValue = VariableHandler.expand(macro, argumentValue);
+							VariableHandler.setScalar(functionMacro, argument.getName(), expandedValue);
+						}
+					} catch (Exception e) {
+						provider.actionAddChatMessage("Exception happened while trying to handle the " + (i + 1) + ". argument (" + argument.getName() + ") of the function " + functionName);
+						
+						System.out.println(String.join(",", params));
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					provider.actionAddChatMessage("Exception happened while trying to handle the " + (i + 1) + ". argument (" + argument.getName() + ") of the function " + functionName);
-					
-					System.out.println(String.join(",", params));
-					e.printStackTrace();
 				}
+				
+				instance.setState(executable = new FunctionExecutable(actionProcessor, functionMacro));
+			} else {
+				IScriptAction scriptAction = macro.getContext().getScriptContext().getAction(functionName);
+				
+				if (scriptAction == null) {
+					provider.actionAddChatMessage("Could not find function or action " + functionName);
+					return true;
+				}
+				
+				IMacroAction macroAction = new MacroAction(
+						instance.getActionProcessor(),
+						scriptAction,
+						rawParams.substring(params[0].length() + 1),
+						((MacroAction)instance).getUnparsedParams().substring(params[0].length() + 1),
+						ArrayUtils.subarray(params, 1, params.length),
+						instance.hasOutVar() ? instance.getOutVarName() : null);
+				
+				instance.setState(executable = new ActionExecutable(macroAction, macro));
 			}
-			
-			instance.setState(state = new State(actionProcessor, functionMacro));
 		}
 		
-		return !state.actionProcessor.execute(state.macro, state.macro.getContext(), false, true, true);
+		return executable.canExecute();
 	}
 	
 	@Override
 	public IReturnValue execute(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
 			String[] params) {
-		State state = instance.getState();
+		Executable executable = instance.getState();
 		
-		if (state == null || state.macro.getState("return") == null) {
-			// Makes sure that you can always assign the result of a function call to a variable
-			// Otherwise it would throw an exception
+		if (executable == null) {
 			return VariableHandler.getEmpty();
 		}
 		
-		IReturnValue returnValue = state.macro.<IReturnValue>getState("return");
+		IReturnValue returnValue = executable.execute();
+		
+		if (returnValue == null) {
+			// Makes sure that you can always assign the result of a function call to a variable
+			// Otherwise it would throw an exception
+			returnValue = VariableHandler.getEmpty();
+		}
+		
 		macro.setState("chain_value", returnValue);
 		macro.setState("chain_variable", instance.getOutVarName());
 		return returnValue;

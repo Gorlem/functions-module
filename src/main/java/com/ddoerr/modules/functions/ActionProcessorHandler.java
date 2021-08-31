@@ -45,7 +45,7 @@ public class ActionProcessorHandler {
 						ArrayUtils.shift(params, 1);
 						
 						return new MacroAction(actionProcessor, scriptAction,
-								rawParams, rawParams, params,
+								rawParams, ((MacroAction)action).getUnparsedParams(), params,
 								action.hasOutVar() ? action.getOutVarName() : null);
 					}
 					
