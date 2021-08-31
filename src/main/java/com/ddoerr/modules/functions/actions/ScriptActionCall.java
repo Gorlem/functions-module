@@ -7,20 +7,17 @@ import java.util.stream.Collectors;
 import com.ddoerr.modules.functions.CachedScriptParser;
 import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.VariableHandler;
 import com.ddoerr.modules.functions.actions.FunctionState.Argument;
 import com.ddoerr.modules.functions.parser.ActionParserCall;
-import com.google.common.base.Strings;
 
 import net.eq2online.macros.core.executive.MacroActionProcessor;
-import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IMacroActionProcessor;
 import net.eq2online.macros.scripting.api.IReturnValue;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
-import net.eq2online.macros.scripting.api.IStringProvider;
-import net.eq2online.macros.scripting.api.ReturnValue;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
 
@@ -98,31 +95,23 @@ public class ScriptActionCall extends ScriptAction {
 					if (!argument.isValid()) {
 						continue;
 					} else if (argument.isCatchAll()) {
-						for (String value : Arrays.stream(params).skip(i + 1).collect(Collectors.toList())) {
-							String expandedValue = provider.expand(macro, value, false);
-							provider.pushValueToArray(functionMacro, argument.getName(), expandedValue);
-						}
+						List<String> values = Arrays.stream(params)
+							.skip(i + 1)
+							.map((value) -> VariableHandler.expand(macro, value))
+							.collect(Collectors.toList());
+						
+						VariableHandler.setArray(functionMacro, argument.getName(), values);
 					} else if (argument.isArray()) {
-						if (hasRemainingValues) {						
-							String arrayName = Variable.getValidVariableOrArraySpecifier(params[i + 1]);
-							int arraySize = provider.getArraySize(macro, arrayName);
-							
-							for (int j = 0; j < arraySize; j++) {
-								String arrayElement = provider.getArrayElement(macro, arrayName, j).toString();
-								
-								provider.pushValueToArray(functionMacro, argument.getName(), arrayElement);
-							}
+						if (hasRemainingValues) {
+							VariableHandler.copyArray(macro, params[i + 1], functionMacro, argument.getName());
 						} else {
-							String[] defaultValues = (String[])argument.getDefaultValue();
-							
-							for (String value : defaultValues) {
-								provider.pushValueToArray(functionMacro, argument.getName(), value);
-							}
+							String[] defaultValues = (String[])argument.getDefaultValue();							
+							VariableHandler.setArray(functionMacro, argument.getName(), defaultValues);
 						}
 					} else {
-						String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();
-						String expandedValue = provider.expand(macro, argumentValue, false);
-						provider.setVariable(functionMacro, argument.getName(), expandedValue);
+						String argumentValue = hasRemainingValues ? params[i + 1] : (String)argument.getDefaultValue();						
+						String expandedValue = VariableHandler.expand(macro, argumentValue);
+						VariableHandler.setScalar(functionMacro, argument.getName(), expandedValue);
 					}
 				} catch (Exception e) {
 					provider.actionAddChatMessage("Exception happened while trying to handle the " + (i + 1) + ". argument (" + argument.getName() + ") of the function " + functionName);
@@ -146,7 +135,7 @@ public class ScriptActionCall extends ScriptAction {
 		if (state == null || state.macro.getState("return") == null) {
 			// Makes sure that you can always assign the result of a function call to a variable
 			// Otherwise it would throw an exception
-			return new ReturnValue(IStringProvider.EMPTY);
+			return VariableHandler.getEmpty();
 		}
 		
 		IReturnValue returnValue = state.macro.<IReturnValue>getState("return");

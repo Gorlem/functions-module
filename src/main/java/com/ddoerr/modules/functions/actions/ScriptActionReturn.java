@@ -1,12 +1,13 @@
 package com.ddoerr.modules.functions.actions;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.VariableHandler;
 import com.ddoerr.modules.functions.parser.ActionParserReturn;
 
-import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
@@ -32,33 +33,20 @@ public class ScriptActionReturn extends ScriptAction {
 	
 	@Override
 	public IReturnValue execute(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
-			String[] params) {
-		
+			String[] params) {		
 		IReturnValue returnValue;
-		
-		if (Variable.couldBeArraySpecifier(rawParams)) {
-			String arrayName = Variable.getValidVariableOrArraySpecifier(rawParams);
-			
-			int arraySize = provider.getArraySize(macro, arrayName);
-			List<String> values = new ArrayList<String>();
-			
-			for (int i = 0; i < arraySize; i++) {
-				values.add(provider.getArrayElement(macro, arrayName, i).toString());
-			}
-			
-			returnValue = new ReturnValueArray(false);
-			((ReturnValueArray)returnValue).putStrings(values);
+
+		if (VariableHandler.isArray(rawParams)) {
+			returnValue = VariableHandler.getArray(macro, rawParams);
 		} else if (params.length > 1) {
-			List<String> values = new ArrayList<String>();
-			
-			for (String param : params) {
-				values.add(provider.expand(macro, param, false));
-			}
+			List<String> values = Arrays.stream(params)
+				.map((value) -> VariableHandler.expand(macro, value))
+				.collect(Collectors.toList());
 			
 			returnValue = new ReturnValueArray(false);
 			((ReturnValueArray)returnValue).putStrings(values); 
 		} else {
-			returnValue = new ReturnValue(provider.expand(macro, rawParams, false));
+			returnValue = new ReturnValue(VariableHandler.expand(macro, rawParams));
 		}
 		
 		macro.setState("return", returnValue);		

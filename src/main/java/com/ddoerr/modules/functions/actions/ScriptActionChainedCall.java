@@ -3,10 +3,10 @@ package com.ddoerr.modules.functions.actions;
 import java.util.ArrayList;
 
 import com.ddoerr.modules.functions.ModuleInfo;
+import com.ddoerr.modules.functions.VariableHandler;
 import com.ddoerr.modules.functions.parser.ActionParserChainedCall;
 import com.google.common.collect.Lists;
 
-import net.eq2online.macros.scripting.Variable;
 import net.eq2online.macros.scripting.api.APIVersion;
 import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
@@ -15,9 +15,7 @@ import net.eq2online.macros.scripting.api.IReturnValueArray;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
 
 @APIVersion(ModuleInfo.API_VERSION)
-public class ScriptActionChainedCall extends ScriptActionCall {
-	private static String CHAIN_ARRAY = "&functions--variable--internal";
-	
+public class ScriptActionChainedCall extends ScriptActionCall {	
 	public ScriptActionChainedCall() {
 		super("chainedcall");
 	}
@@ -39,16 +37,9 @@ public class ScriptActionChainedCall extends ScriptActionCall {
 		String value;
 		
 		if (chainValue instanceof IReturnValueArray) {
-			IReturnValueArray chainArray = (IReturnValueArray)chainValue;
-			
-			provider.clearArray(macro, CHAIN_ARRAY);
-			
-			for (String entry : chainArray.getStrings()) {
-				provider.pushValueToArray(macro, CHAIN_ARRAY, entry);
-			}
-			
-			value = CHAIN_ARRAY + "[]";
-		} else {			
+			value = VariableHandler.getTemporaryArray();
+			VariableHandler.setArray(macro, value, chainValue);
+		} else {
 			value = chainValue.getString();
 		}
 		
@@ -74,23 +65,8 @@ public class ScriptActionChainedCall extends ScriptActionCall {
 		IReturnValue returnValue = super.execute(provider, macro, instance, rawParams, params);
 		macro.setState("chain_variable", chainVariable);
 		
-		if (Variable.couldBeArraySpecifier(chainVariable)) {
-			String variableName = Variable.getValidVariableOrArraySpecifier(chainVariable);
-			provider.clearArray(macro, variableName);
-			
-			if (returnValue instanceof IReturnValueArray) {
-				IReturnValueArray array = (IReturnValueArray)returnValue;				
-				
-				for (String entry : array.getStrings()) {
-					provider.pushValueToArray(macro, variableName, entry);
-				}
-			} else {
-				provider.pushValueToArray(macro, variableName, returnValue.getString());
-			}
-		} else {
-			provider.setVariable(macro, chainVariable, returnValue);
-		}
-		
+		VariableHandler.set(macro, chainVariable, returnValue);
+
 		return returnValue;
 	}
 }
