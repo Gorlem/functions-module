@@ -6,8 +6,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
+
+import net.eq2online.macros.core.executive.MacroAction;
 import net.eq2online.macros.scripting.api.IMacro;
+import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IReturnValue;
 import net.eq2online.macros.scripting.api.IReturnValueArray;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
@@ -149,5 +154,30 @@ public class VariableHandler {
 	
 	public static String expand(IMacro macro, String text) {
 		return getProvider(macro).expand(macro, text, false);
+	}
+	
+	public static IReturnValue parseParameters(IMacroAction macroAction, IMacro macro) {
+		IScriptActionProvider provider = getProvider(macro);
+		
+		String rawParams = macroAction.getRawParams();
+		String[] params = macroAction.getParams();
+		String unparsedParams = ((MacroAction)macroAction).getUnparsedParams();
+
+		if (VariableHandler.isValid(rawParams)) {
+			return VariableHandler.get(macro, rawParams);
+		} else if (params.length > 1) {
+			List<String> values = Arrays.stream(params)
+				.map((value) -> VariableHandler.expand(macro, value))
+				.collect(Collectors.toList());
+			
+			ReturnValueArray returnValue = new ReturnValueArray(false);
+			returnValue.putStrings(values);
+			return returnValue;
+		} else if (Lists.newArrayList('"', '%').contains(unparsedParams.charAt(0))) {
+			return new ReturnValue(VariableHandler.expand(macro, rawParams));
+		} else {
+			int result = provider.getExpressionEvaluator(macro, VariableHandler.expand(macro, rawParams)).evaluate();
+			return new ReturnValue(result);
+		}
 	}
 }
