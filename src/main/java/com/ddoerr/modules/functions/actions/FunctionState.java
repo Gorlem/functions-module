@@ -11,42 +11,36 @@ import net.eq2online.macros.scripting.parser.ScriptCore;
 
 public class FunctionState {
 	public static class Argument {
-		public static Argument Invalid = new Argument(null, false);
+		public static Argument Invalid = new Argument(null, null);
 
 		private static String variablePattern = "([&#]?(?:[a-z](?:[a-z0-9_\\-]*)))";
 		
 		private static Pattern scalarPattern = Pattern.compile("^" + variablePattern + "($|,)");
 		private static Pattern scalarDefaultPattern = Pattern.compile("^" + variablePattern + "=(.+?)($|,)");
 
-		private static Pattern arrayPattern = Pattern.compile("^" + variablePattern + "\\[\\]($|,)");
-		private static Pattern arrayDefaultPattern = Pattern.compile("^" + variablePattern + "\\[\\]=\\[(.+?)\\]($|,)");
-		
-		private static Pattern catchAllPattern = Pattern.compile("^..." + variablePattern + "\\[\\]$");
+		private static Pattern arrayPattern = Pattern.compile("^(\\.\\.\\.)?" + variablePattern + "\\[\\]($|,)");
+		private static Pattern arrayDefaultPattern = Pattern.compile("^(\\.\\.\\.)?" + variablePattern + "\\[\\]=\\[(.+?)\\]?($|,)");
 		
 		private final String name;
 		private final boolean isArray;
 		private final Object defaultValue;
 		private final boolean isCatchAll;
 		
-		public Argument(String name, boolean isArray) {
+		public Argument(String name, String defaultValue) {
 			this.name = name;
-			this.isArray = isArray;
-			this.defaultValue = null;
-			this.isCatchAll = false;
-		}
-		public Argument(String name, boolean isArray, boolean isCatchAll) {
-			this.name = name;
-			this.isArray = isArray;
-			this.defaultValue = null;
-			this.isCatchAll = isCatchAll;
-		}
-		
-		public Argument(String name, boolean isArray, Object defaultValue) {
-			this.name = name;
-			this.isArray = isArray;
+			this.isArray = false;
 			this.defaultValue = defaultValue;
 			this.isCatchAll = false;
 		}
+		
+		public Argument(String name, boolean isCatchAll, String[] defaultValue) {
+			this.name = name;
+			this.isArray = true;
+			this.defaultValue = defaultValue;
+			this.isCatchAll = isCatchAll;
+		}
+		
+		
 
 		public String getName() {
 			return name;
@@ -86,7 +80,7 @@ public class FunctionState {
 				Matcher scalarMatcher = scalarPattern.matcher(input);
 				
 				if (scalarMatcher.find()) {
-					arguments.add(new Argument(scalarMatcher.group(1), false));
+					arguments.add(new Argument(scalarMatcher.group(1), null));
 					input = input.substring(scalarMatcher.end());
 					continue;
 				}
@@ -95,7 +89,7 @@ public class FunctionState {
 				
 				if (scalarDefaultMatcher.find()) {
 					String[] tokenized = ScriptCore.tokenize(scalarDefaultMatcher.group(2), (char)0, '"', '"', '\\', new StringBuilder());
-					arguments.add(new Argument(scalarDefaultMatcher.group(1), false, tokenized[0]));
+					arguments.add(new Argument(scalarDefaultMatcher.group(1), tokenized[0]));
 					input = input.substring(scalarDefaultMatcher.end());
 					continue;
 				}
@@ -103,7 +97,7 @@ public class FunctionState {
 				Matcher arrayMatcher = arrayPattern.matcher(input);
 				
 				if (arrayMatcher.find()) {
-					arguments.add(new Argument(arrayMatcher.group(1), true));
+					arguments.add(new Argument(arrayMatcher.group(2), arrayMatcher.group(1) != null, null));
 					input = input.substring(arrayMatcher.end());
 					continue;
 				}
@@ -111,18 +105,11 @@ public class FunctionState {
 				Matcher arrayDefaultMatcher = arrayDefaultPattern.matcher(input);
 				
 				if (arrayDefaultMatcher.find()) {
-					String[] tokenized = ScriptCore.tokenize(arrayDefaultMatcher.group(2), ',', '"', '"', '\\', new StringBuilder());
-					arguments.add(new Argument(arrayDefaultMatcher.group(1), true, tokenized));
+					String[] tokenized = ScriptCore.tokenize(arrayDefaultMatcher.group(3), ',', '"', '"', '\\', new StringBuilder());
+					arguments.add(new Argument(arrayDefaultMatcher.group(2), arrayDefaultMatcher.group(1) != null, tokenized));
 					input = input.substring(arrayDefaultMatcher.end());
 					continue;
 
-				}
-				
-				Matcher catchAllMatcher = catchAllPattern.matcher(input);
-				
-				if (catchAllMatcher.find()) {
-					arguments.add(new Argument(catchAllMatcher.group(1), true, true));
-					break;
 				}
 				
 				arguments.add(Invalid);
