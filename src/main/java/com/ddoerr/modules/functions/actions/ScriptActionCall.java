@@ -24,11 +24,11 @@ import net.eq2online.macros.scripting.api.IMacro;
 import net.eq2online.macros.scripting.api.IMacroAction;
 import net.eq2online.macros.scripting.api.IMacroActionProcessor;
 import net.eq2online.macros.scripting.api.IReturnValue;
+import net.eq2online.macros.scripting.api.IReturnValueArray;
 import net.eq2online.macros.scripting.api.IScriptAction;
 import net.eq2online.macros.scripting.api.IScriptActionProvider;
 import net.eq2online.macros.scripting.parser.ScriptAction;
 import net.eq2online.macros.scripting.parser.ScriptContext;
-import net.minecraft.client.Minecraft;
 
 @APIVersion(ModuleInfo.API_VERSION)
 public class ScriptActionCall extends ScriptAction {
@@ -68,11 +68,27 @@ public class ScriptActionCall extends ScriptAction {
 	@Override
 	public boolean canExecuteNow(IScriptActionProvider provider, IMacro macro, IMacroAction instance, String rawParams,
 			String[] params) {
-		System.out.println(Minecraft.getMinecraft().world.getTotalWorldTime());
 		Executable executable = instance.getState();
 		
 		if (executable == null) {
 			String functionName = params.length == 0 ? "default" : provider.expand(macro, params[0], false);
+			
+			for (int i = 0; i < params.length; i++) {
+				String param = params[i];
+				if (param.startsWith("...") && VariableHandler.isArray(param.substring(3))) {
+					IReturnValueArray array = VariableHandler.getArray(macro, param.substring(3));
+
+					List<String> strings = array.getStrings();
+					for (int j = 0; j < strings.size(); j++) {
+						String element = strings.get(j);
+						params = ArrayUtils.add(params, i + j, element);
+					}
+					i += strings.size();
+					params = ArrayUtils.remove(params, i);
+					
+					rawParams = rawParams.replace(param, String.join(" ", strings));
+				}
+			}
 			
 			IMacro parent = macro;
 			FunctionState functionState = macro.getState("fn#" + functionName.toLowerCase());
@@ -114,12 +130,16 @@ public class ScriptActionCall extends ScriptAction {
 						if (!argument.isValid()) {
 							continue;
 						} else if (argument.isCatchAll()) {
-							List<String> values = Arrays.stream(params)
-								.skip(i + 1)
-								.map((value) -> VariableHandler.expand(macro, value))
-								.collect(Collectors.toList());
-							
-							VariableHandler.setArray(functionMacro, argument.getName(), values);
+							if (hasRemainingValues) {								
+								List<String> values = Arrays.stream(params)
+										.skip(i + 1)
+										.map((value) -> VariableHandler.expand(macro, value))
+										.collect(Collectors.toList());
+								VariableHandler.setArray(functionMacro, argument.getName(), values);
+							} else {
+								String[] values = (String[])argument.getDefaultValue();
+								VariableHandler.setArray(functionMacro, argument.getName(), values);
+							}
 						} else if (argument.isArray()) {
 							if (hasRemainingValues) {
 								VariableHandler.copyArray(macro, params[i + 1], functionMacro, argument.getName());
