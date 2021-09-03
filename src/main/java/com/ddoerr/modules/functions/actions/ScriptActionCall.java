@@ -169,6 +169,21 @@ public class ScriptActionCall extends ScriptAction {
 					return true;
 				}
 				
+				if (scriptAction.isStackPopOperator() || scriptAction.isStackPushOperator()) {
+					provider.actionAddChatMessage("You can not run stack operators with CALL");
+					return true;
+				}
+				
+				if (scriptAction.isConditionalOperator()) {
+					provider.actionAddChatMessage("You can not run conditional operators with CALL");
+					return true;
+				}
+				
+				if (!scriptAction.checkExecutePermission()) {
+					provider.actionAddChatMessage("You have no permission to run this action");
+					return true;
+				}
+				
 				IMacroAction macroAction = new MacroAction(
 						instance.getActionProcessor(),
 						scriptAction,
