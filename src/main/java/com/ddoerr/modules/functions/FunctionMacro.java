@@ -125,7 +125,7 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public int getID() {
-		return 0;
+		return parentMacro.getID();
 	}
 
 	@Override
@@ -196,6 +196,11 @@ public class FunctionMacro implements IMacro {
 
 	@Override
 	public void kill() {
+		isDead = true;
+		parentMacro.kill();
+	}
+	
+	public void killThis() {
 		isDead = true;
 	}
 

@@ -1,5 +1,6 @@
 package com.ddoerr.modules.functions.actions;
 
+import com.ddoerr.modules.functions.FunctionMacro;
 import com.ddoerr.modules.functions.ModuleInfo;
 import com.ddoerr.modules.functions.VariableHandler;
 import com.ddoerr.modules.functions.parser.ActionParserReturn;
@@ -31,7 +32,7 @@ public class ScriptActionReturn extends ScriptAction {
 		
 		macro.setState("return", returnValue);		
 		
-		macro.kill();
+		((FunctionMacro)macro).killThis();
 		
 		return null;
 	}
