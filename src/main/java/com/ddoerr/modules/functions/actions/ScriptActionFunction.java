@@ -58,12 +58,13 @@ public class ScriptActionFunction extends ScriptAction {
 		int end = actionProcessorHandler.getCurrentPointer();
 		
 		String functionName = params.length == 0 ? "default" : params[0];
+		
+		actionProcessorHandler.replaceActions(functionName);
+		
 		List<IMacroAction> actions = actionProcessorHandler.getActionsBetween(start, end);
 		List<Argument> arguments = Argument.tokenize(((MacroAction)instance).getUnparsedParams());
 
 		macro.setState("fn#" + functionName.toLowerCase(), new FunctionState(actions, arguments));
-		
-		actionProcessorHandler.replaceActions(functionName);
 		
 		return true;
 	}
